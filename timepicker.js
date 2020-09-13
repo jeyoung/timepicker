@@ -108,6 +108,10 @@ let ns;
 			/* Perform an initial update */
 			this.update();
 
+			this.focus();
+		};
+
+		TimepickerController.prototype.focus = function () {
 			this.textbox.focus();
 		};
 
