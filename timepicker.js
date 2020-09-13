@@ -173,9 +173,9 @@ window.addEventListener('load', function () {
 	 * wrapping them into controllers.
 	 */
 
+	new ns.TimepickerController(document.querySelector('#text2')).initialize();
+
 	const textbox = document.querySelector('#text1');
 	const controller = new ns.TimepickerController(textbox);
 	controller.initialize();
-
-	new ns.TimepickerController(document.querySelector('#text2')).initialize();
 });
