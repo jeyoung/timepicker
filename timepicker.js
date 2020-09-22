@@ -105,7 +105,9 @@ let ns;
 				this.onKeyDown(e);
 			}.bind(this));
 
-			/* Perform an initial update */
+			/*
+			 * Perform an initial update
+			 */
 			this.update();
 
 			this.focus();
@@ -116,7 +118,7 @@ let ns;
 		};
 
 		TimepickerController.prototype.input = function (n) {
-			if (this.buffer.length == 2)
+			if (this.buffer.length === 2)
 				this.clearbuffer();
 
 			this.buffer = this.buffer+n.toString();
@@ -173,7 +175,8 @@ let ns;
 
 window.addEventListener('load', function () {
 
-	/* This shows how text INPUT elements can be made timepickers by
+	/*
+	 * This shows how text INPUT elements can be made timepickers by
 	 * wrapping them into controllers.
 	 */
 
