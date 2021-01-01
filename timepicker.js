@@ -1,30 +1,56 @@
+"use strict";
+
 let ns;
 (function (namespace) {
-	"use strict";
+
+	/**
+	 * Timepart namespace
+	 */
 	const Timepart = (function () {
 
+		/**
+		 * Represents a time part
+		 * @constructor
+		 * @param {number} value - the value of the part
+		 * @param {number} min - the lower limit of allowed values
+		 * @param {number} max - the upper limit of allowed values
+		 */
 		function Timepart(value, min, max) {
 			this.value = value;
 			this.min = min;
 			this.max = max;
 		}
 
+		/**
+		 * Sets the value for this time part
+		 * @param {number} value - the value
+		 */
 		Timepart.prototype.setValue = function (value) {
 			if (value < this.min || value > this.max)
 				return;
 			this.value = value;
 		};
 
+		/**
+		 * Increments the value for this time part
+		 */
 		Timepart.prototype.increment = function () {
 			if (++this.value > this.max)
 				this.value = this.max;
 		};
 
+		/**
+		 * Decrements the value for this time part
+		 */
 		Timepart.prototype.decrement = function () {
 			if (--this.value < this.min)
 				this.value = this.min;
 		};
 
+		/**
+		 * Returns the formatted value for this time part
+		 * @returns {string} the value in the format '0#'
+		 */
 		Timepart.prototype.formatted = function () {
 			return this.value.toString().padStart(2, '0');
 		};
@@ -32,8 +58,16 @@ let ns;
 		return Timepart;
 	})();
 
+	/**
+	 * TimepickerController namespace
+	 */
 	const TimepickerController = (function () {
 
+		/**
+		 * Represents the controller for the time picker element
+		 * @constructor
+		 * @param {HTMLInputElement} textbox - the textbox to be controlled
+		 */
 		function TimepickerController(textbox) {
 			this.textbox = textbox;
 			this.parts = [new Timepart(0, 0, 23), new Timepart(0, 0, 59), new Timepart(0, 0, 59)];
@@ -42,6 +76,10 @@ let ns;
 			this.bufferindex = 0;
 		}
 
+		/**
+		 * Handles the 'keydown' event on the controlled textbox
+		 * @param {KeyboardEvent} e - the event
+		 */
 		TimepickerController.prototype.onKeyDown = function (e) {
 			const evt = e ? e : window.event;
 
@@ -55,19 +93,13 @@ let ns;
 					evt.returnValue = false;
 				};
 
-			let overrideEvent = true;
 			switch (evt.keyCode) {
-				case 13:
-					alert(this.textbox.value);
-					break;
-				case 33:
 				case 37:
 					this.previous();
 					break;
 				case 38:
 					this.up();
 					break;
-				case 34:
 				case 39:
 					this.next();
 					break;
@@ -81,81 +113,142 @@ let ns;
 					this.home();
 					break;
 				default:
+					// Ignore Shift key presses
+					if (evt.shiftKey)
+						break;
+
+					// Ignore modified key presses
+					if (evt.altKey || evt.ctrlKey)
+						return;
+
+					// Ignore Tab, Enter, and Escape key presses respectively
+					if (evt.keyCode == 9 || evt.keyCode == 13 || evt.keyCode == 27)
+						return;
+
+					// Ignore F5 to F12 key presses
+					if (evt.keyCode >= 112 && evt.keyCode <= 123)
+						return;
+
+					// Processes number row keys 1-0...
 					if (evt.keyCode >= 48 && evt.keyCode <= 57)
-						this.input(Math.abs(evt.keyCode-48));
+						this.input(Math.abs(evt.keyCode - 48));
+					// ... and numeric keypad keys 0-9
 					else if (evt.keyCode >= 96 && evt.keyCode <= 105)
-						this.input(Math.abs(evt.keyCode-96));
-					else
-						overrideEvent = false;
+						this.input(Math.abs(evt.keyCode - 96));
+
 					break;
 			}
 
-			if (overrideEvent)
-				ignoreDefaultEvent();
+			ignoreDefaultEvent();
 
-			this.update();
+			this._update();
 		};
 
+		/**
+		 * Initialises the controller
+		 */
 		TimepickerController.prototype.initialize = function () {
 			this.textbox.addEventListener('keydown', function (e) {
 				this.onKeyDown(e);
 			}.bind(this));
-
-			/*
-			 * Perform an initial update
-			 */
-			this.update();
-
+			this.textbox.addEventListener('focus', function (e) {
+				this.onFocus(e);
+			}.bind(this));
 			this.focus();
 		};
 
-		TimepickerController.prototype.focus = function () {
-			this.textbox.focus();
+		/**
+		 * Handles the 'focus' event
+		 * @param {FocusEvent} e - the event
+		 */
+		TimepickerController.prototype.onFocus = function (e) {
+			this.focus();
 		};
 
+		/**
+		 * Sets the focus on the controlled textbox
+		 */
+		TimepickerController.prototype.focus = function () {
+			this.textbox.focus();
+			this.partindex = 0;
+			this._clearbuffer();
+			setTimeout(function () {
+				this._update();
+			}.bind(this), 250);
+		};
+
+		/**
+		 * Directly input the specified number into the current time part
+		 * 
+		 * @param {number} n - the input number
+		 */
 		TimepickerController.prototype.input = function (n) {
 			this.buffer[this.bufferindex % 2] = n.toString();
 			this.parts[this.partindex].setValue(Number.parseInt(this.buffer.join('')));
 			++this.bufferindex;
 		};
 
-		TimepickerController.prototype.clearbuffer = function () {
+		/**
+		 * Clears the input buffer
+		 */
+		TimepickerController.prototype._clearbuffer = function () {
 			this.buffer.splice(0, 2);
 			this.bufferindex = 0;
 		};
 
+		/**
+		 * Selects the next time part
+		 */
 		TimepickerController.prototype.next = function () {
 			if (++this.partindex >= this.parts.length)
 				this.partindex = 0;
-			this.clearbuffer();
+			this._clearbuffer();
 		};
 
+		/**
+		 * Selects the previous time part
+		 */
 		TimepickerController.prototype.previous = function () {
 			if (--this.partindex < 0)
 				this.partindex = 2;
-			this.clearbuffer();
+			this._clearbuffer();
 		};
 
+		/**
+		 * Selects the first time part
+		 */
 		TimepickerController.prototype.home = function () {
-			this.partIndex = 0;
-			this.clearbuffer();
+			this.partindex = 0;
+			this._clearbuffer();
 		};
 
+		/**
+		 * Selects the last time part
+		 */
 		TimepickerController.prototype.end = function () {
-			this.partIndex = this.parts.length-1;
-			this.clearbuffer();
+			this.partindex = this.parts.length-1;
+			this._clearbuffer();
 		};
 
+		/**
+		 * Increments the value of the selected time part
+		 */
 		TimepickerController.prototype.up = function () {
 			this.parts[this.partindex].increment();
 		};
 
+		/**
+		 * Decrements the value of the selected time part
+		 */
 		TimepickerController.prototype.down = function () {
 			this.parts[this.partindex].decrement();
 		};
 
-		TimepickerController.prototype.update = function () {
-			this.textbox.value = this.parts[0].formatted() + ':' + this.parts[1].formatted() + ':' + this.parts[2].formatted();
+		/**
+		 * Updates the controlled textbox
+		 */
+		TimepickerController.prototype._update = function () {
+			this.textbox.value = `${this.parts[0].formatted()}:${this.parts[1].formatted()}:${this.parts[2].formatted()}`;
 			this.textbox.setSelectionRange(this.partindex*3, this.partindex*3+2);
 		};
 
@@ -173,8 +266,10 @@ window.addEventListener('load', function () {
 	 * wrapping them into controllers.
 	 */
 
+	// Using chained calls
 	new ns.TimepickerController(document.querySelector('#text2')).initialize();
 
+	// Using separate calls
 	const textbox = document.querySelector('#text1');
 	const controller = new ns.TimepickerController(textbox);
 	controller.initialize();
