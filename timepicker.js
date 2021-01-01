@@ -26,8 +26,7 @@ let ns;
 		};
 
 		Timepart.prototype.formatted = function () {
-			const tmp = '00'+this.value.toString();
-			return tmp.substring(tmp.length-2, tmp.length);
+			return this.value.toString().padStart(2, '0');
 		};
 
 		return Timepart;
@@ -37,13 +36,10 @@ let ns;
 
 		function TimepickerController(textbox) {
 			this.textbox = textbox;
-			this.partindex = 0;
 			this.parts = [new Timepart(0, 0, 23), new Timepart(0, 0, 59), new Timepart(0, 0, 59)];
-			this.buffer = "";
-			this.buffertimeout = null;
-			this.clearbuffer = function () {
-				this.buffer = "";
-			};
+			this.partindex = 0;
+			this.buffer = new Array();
+			this.bufferindex = 0;
 		}
 
 		TimepickerController.prototype.onKeyDown = function (e) {
@@ -118,17 +114,14 @@ let ns;
 		};
 
 		TimepickerController.prototype.input = function (n) {
-			if (this.buffer.length === 2)
-				this.clearbuffer();
+			this.buffer[this.bufferindex % 2] = n.toString();
+			this.parts[this.partindex].setValue(Number.parseInt(this.buffer.join('')));
+			++this.bufferindex;
+		};
 
-			this.buffer = this.buffer+n.toString();
-			this.parts[this.partindex].setValue(0+this.buffer);
-
-			if (this.buffertimeout)
-				clearTimeout(this.buffertimeout);
-			this.buffertimeout = setTimeout(function () {
-				this.clearbuffer();
-			}.bind(this), 1000);
+		TimepickerController.prototype.clearbuffer = function () {
+			this.buffer.splice(0, 2);
+			this.bufferindex = 0;
 		};
 
 		TimepickerController.prototype.next = function () {
