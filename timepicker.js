@@ -80,7 +80,7 @@ let ns;
 		 * Handles the 'keydown' event on the controlled textbox
 		 * @param {KeyboardEvent} e - the event
 		 */
-		TimepickerController.prototype.onKeyDown = function (e) {
+		TimepickerController.prototype._onKeyDown = function (e) {
 			const evt = e ? e : window.event;
 
 			let ignoreDefaultEvent;
@@ -95,22 +95,22 @@ let ns;
 
 			switch (evt.keyCode) {
 				case 37:
-					this.previous();
+					this._previous();
 					break;
 				case 38:
-					this.up();
+					this._up();
 					break;
 				case 39:
-					this.next();
+					this._next();
 					break;
 				case 40:
-					this.down();
+					this._down();
 					break;
 				case 35:
-					this.end();
+					this._end();
 					break;
 				case 36:
-					this.home();
+					this._home();
 					break;
 				default:
 					// Ignore Shift key presses
@@ -131,10 +131,10 @@ let ns;
 
 					// Processes number row keys 1-0...
 					if (evt.keyCode >= 48 && evt.keyCode <= 57)
-						this.input(Math.abs(evt.keyCode - 48));
+						this._input(Math.abs(evt.keyCode - 48));
 					// ... and numeric keypad keys 0-9
 					else if (evt.keyCode >= 96 && evt.keyCode <= 105)
-						this.input(Math.abs(evt.keyCode - 96));
+						this._input(Math.abs(evt.keyCode - 96));
 
 					break;
 			}
@@ -149,26 +149,26 @@ let ns;
 		 */
 		TimepickerController.prototype.initialize = function () {
 			this.textbox.addEventListener('keydown', function (e) {
-				this.onKeyDown(e);
+				this._onKeyDown(e);
 			}.bind(this));
 			this.textbox.addEventListener('focus', function (e) {
-				this.onFocus(e);
+				this._onFocus(e);
 			}.bind(this));
-			this.focus();
+			this._focus();
 		};
 
 		/**
 		 * Handles the 'focus' event
 		 * @param {FocusEvent} e - the event
 		 */
-		TimepickerController.prototype.onFocus = function (e) {
-			this.focus();
+		TimepickerController.prototype._onFocus = function (e) {
+			this._focus();
 		};
 
 		/**
 		 * Sets the focus on the controlled textbox
 		 */
-		TimepickerController.prototype.focus = function () {
+		TimepickerController.prototype._focus = function () {
 			this.textbox.focus();
 			this.partindex = 0;
 			this._clearbuffer();
@@ -182,7 +182,7 @@ let ns;
 		 * 
 		 * @param {number} n - the input number
 		 */
-		TimepickerController.prototype.input = function (n) {
+		TimepickerController.prototype._input = function (n) {
 			this.buffer[this.bufferindex % 2] = n.toString();
 			this.parts[this.partindex].setValue(Number.parseInt(this.buffer.join('')));
 			++this.bufferindex;
@@ -199,7 +199,7 @@ let ns;
 		/**
 		 * Selects the next time part
 		 */
-		TimepickerController.prototype.next = function () {
+		TimepickerController.prototype._next = function () {
 			if (++this.partindex >= this.parts.length)
 				this.partindex = 0;
 			this._clearbuffer();
@@ -208,7 +208,7 @@ let ns;
 		/**
 		 * Selects the previous time part
 		 */
-		TimepickerController.prototype.previous = function () {
+		TimepickerController.prototype._previous = function () {
 			if (--this.partindex < 0)
 				this.partindex = 2;
 			this._clearbuffer();
@@ -217,7 +217,7 @@ let ns;
 		/**
 		 * Selects the first time part
 		 */
-		TimepickerController.prototype.home = function () {
+		TimepickerController.prototype._home = function () {
 			this.partindex = 0;
 			this._clearbuffer();
 		};
@@ -225,7 +225,7 @@ let ns;
 		/**
 		 * Selects the last time part
 		 */
-		TimepickerController.prototype.end = function () {
+		TimepickerController.prototype._end = function () {
 			this.partindex = this.parts.length-1;
 			this._clearbuffer();
 		};
@@ -233,14 +233,14 @@ let ns;
 		/**
 		 * Increments the value of the selected time part
 		 */
-		TimepickerController.prototype.up = function () {
+		TimepickerController.prototype._up = function () {
 			this.parts[this.partindex].increment();
 		};
 
 		/**
 		 * Decrements the value of the selected time part
 		 */
-		TimepickerController.prototype.down = function () {
+		TimepickerController.prototype._down = function () {
 			this.parts[this.partindex].decrement();
 		};
 
