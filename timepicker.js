@@ -113,8 +113,8 @@ let ns;
 					this._home();
 					break;
 				default:
-					// Ignore Shift key presses
-					if (evt.shiftKey)
+					// Ignore Shift key presses, except if they are combine with Tab
+					if (evt.shiftKey && !evt.keyCode == 9)
 						break;
 
 					// Ignore modified key presses
