@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-GB">
 	<head>
 		<meta charset="utf-8">
@@ -11,13 +11,23 @@
 			margin: 10px;
 		}
 		</style>
+		<script type="text/javascript">
+			window.addEventListener('load', function (e) {
+				const input1 = document.querySelector('#text1');
+				input1.addEventListener('change', function (changed) {
+					console.log('changed', changed);
+				});
+			});
+		</script>
 	</head>
 	<body>
 		<form>
 			<div>
+				<label>Test 1</label>
 				<input type="text" id="text1" autocomplete="off" />
 			</div>
 			<div>
+				<label>Test 2</label>
 				<input type="text" id="text2" autocomplete="off" />
 			</div>
 		</form>

@@ -114,7 +114,7 @@ let ns;
 					break;
 				default:
 					// Ignore Shift key presses, except if they are combine with Tab
-					if (evt.shiftKey && !evt.keyCode == 9)
+					if (evt.shiftKey && evt.keyCode !== 9)
 						break;
 
 					// Ignore modified key presses
@@ -122,7 +122,7 @@ let ns;
 						return;
 
 					// Ignore Tab, Enter, and Escape key presses respectively
-					if (evt.keyCode == 9 || evt.keyCode == 13 || evt.keyCode == 27)
+					if (evt.keyCode === 9 || evt.keyCode === 13 || evt.keyCode === 27)
 						return;
 
 					// Ignore F5 to F12 key presses
@@ -248,8 +248,13 @@ let ns;
 		 * Updates the controlled textbox
 		 */
 		TimepickerController.prototype._update = function () {
+			const previousValue = this.textbox.value;
 			this.textbox.value = `${this.parts[0].formatted()}:${this.parts[1].formatted()}:${this.parts[2].formatted()}`;
-			this.textbox.setSelectionRange(this.partindex*3, this.partindex*3+2);
+			this.textbox.setSelectionRange(this.partindex * 3, this.partindex * 3 + 2);
+			if (this.textbox.value !== previousValue) {
+				this.textbox.dispatchEvent(new InputEvent('input', { data: this.textbox.value }));
+				this.textbox.dispatchEvent(new InputEvent('change', { data: this.textbox.value }));
+			}
 		};
 
 		return TimepickerController;
