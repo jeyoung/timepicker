@@ -25,7 +25,7 @@ let ns;
 		 * Sets the value for this time part
 		 * @param {number} value - the value
 		 */
-		Timepart.prototype.setValue = function (value) {
+		Timepart.prototype.set = function (value) {
 			if (value < this.min || value > this.max)
 				return;
 			this.value = value;
@@ -59,6 +59,50 @@ let ns;
 	})();
 
 	/**
+	 * InputBuffer namespace
+	 */
+	const InputBuffer = (function () {
+
+		/**
+		 * Represents an input buffer.
+		 * @constructor
+		 * @param {number} size - the size of the buffer
+		 */
+		function InputBuffer(size) {
+			this.inputs = new Array(size);
+			this.index = 0;
+			this.size = size;
+		}
+
+		/**
+		 * Clears the buffer.
+		 */
+		InputBuffer.prototype.clear = function () {
+			this.inputs.splice(0, this.size);
+			this.index = 0;
+		};
+
+		/**
+		 * Puts a value in the buffer.
+		 * @param {string) str - the value
+		 */
+		InputBuffer.prototype.put = function (str) {
+			this.inputs[this.index % this.size] = str;
+			++this.index;
+		};
+
+		/**
+		 * Returns the value of the buffer.
+		 * @returns {string} the value of the buffer
+		 */
+		InputBuffer.prototype.value = function () {
+			return this.inputs.join('');
+		};
+
+		return InputBuffer;
+	})();
+
+	/**
 	 * TimepickerController namespace
 	 */
 	const TimepickerController = (function () {
@@ -72,8 +116,7 @@ let ns;
 			this.textbox = textbox;
 			this.parts = [new Timepart(0, 0, 23), new Timepart(0, 0, 59), new Timepart(0, 0, 59)];
 			this.partindex = 0;
-			this.buffer = new Array();
-			this.bufferindex = 0;
+			this.buffer = new InputBuffer(2);
 		}
 
 		/**
@@ -171,7 +214,7 @@ let ns;
 		TimepickerController.prototype._focus = function () {
 			this.textbox.focus();
 			this.partindex = 0;
-			this._clearbuffer();
+			this.buffer.clear();
 			setTimeout(function () {
 				this._update();
 			}.bind(this), 250);
@@ -183,17 +226,8 @@ let ns;
 		 * @param {number} n - the input number
 		 */
 		TimepickerController.prototype._input = function (n) {
-			this.buffer[this.bufferindex % 2] = n.toString();
-			this.parts[this.partindex].setValue(Number.parseInt(this.buffer.join('')));
-			++this.bufferindex;
-		};
-
-		/**
-		 * Clears the input buffer
-		 */
-		TimepickerController.prototype._clearbuffer = function () {
-			this.buffer.splice(0, 2);
-			this.bufferindex = 0;
+			this.buffer.put(n.toString());
+			this.parts[this.partindex].set(Number.parseInt(this.buffer.value()));
 		};
 
 		/**
@@ -202,7 +236,7 @@ let ns;
 		TimepickerController.prototype._next = function () {
 			if (++this.partindex >= this.parts.length)
 				this.partindex = 0;
-			this._clearbuffer();
+			this.buffer.clear();
 		};
 
 		/**
@@ -211,7 +245,7 @@ let ns;
 		TimepickerController.prototype._previous = function () {
 			if (--this.partindex < 0)
 				this.partindex = 2;
-			this._clearbuffer();
+			this.buffer.clear();
 		};
 
 		/**
@@ -219,7 +253,7 @@ let ns;
 		 */
 		TimepickerController.prototype._home = function () {
 			this.partindex = 0;
-			this._clearbuffer();
+			this.buffer.clear();
 		};
 
 		/**
@@ -227,7 +261,7 @@ let ns;
 		 */
 		TimepickerController.prototype._end = function () {
 			this.partindex = this.parts.length-1;
-			this._clearbuffer();
+			this.buffer.clear();
 		};
 
 		/**
